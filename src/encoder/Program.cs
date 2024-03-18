@@ -151,7 +151,7 @@ namespace HeifEncoderSample
                     else
                     {
                         string formatName = avif ? "AV1" : "HEVC";
-                        Console.WriteLine($"No { formatName } encoder available.");
+                        Console.WriteLine($"No {formatName} encoder available.");
                         return;
                     }
 
@@ -176,12 +176,12 @@ namespace HeifEncoderSample
                             else if (writeTwoProfiles && !LibHeifInfo.CanWriteTwoColorProfiles)
                             {
                                 writeTwoProfiles = false;
-                                Console.WriteLine($"Warning: LibHeif version { LibHeifInfo.Version } cannot write two color profiles.");
+                                Console.WriteLine($"Warning: LibHeif version {LibHeifInfo.Version} cannot write two color profiles.");
                             }
                             else if (!string.IsNullOrWhiteSpace(primaryItemDescription) && !LibHeifInfo.HaveVersion(1, 16, 0))
                             {
                                 primaryItemDescription = null;
-                                Console.WriteLine($"Warning: LibHeif version { LibHeifInfo.Version } cannot set a primary item description.");
+                                Console.WriteLine($"Warning: LibHeif version {LibHeifInfo.Version} cannot set a primary item description.");
                             }
 
                             string inputPath = remaining[0];
@@ -209,7 +209,7 @@ namespace HeifEncoderSample
                                     else
                                     {
                                         lossless = false;
-                                        Console.WriteLine($"Warning: the { encoderDescriptor.IdName } encoder does not support lossless compression, using lossy compression.");
+                                        Console.WriteLine($"Warning: the {encoderDescriptor.IdName} encoder does not support lossless compression, using lossy compression.");
                                     }
                                 }
 
@@ -436,7 +436,7 @@ namespace HeifEncoderSample
             {
                 var pngMeta = imageInfo.Metadata.GetPngMetadata();
 
-                mayHaveTransparency = pngMeta.HasTransparency;
+                mayHaveTransparency = pngMeta.TransparentColor != null;
             }
             else if (imageFormat is JpegFormat)
             {
@@ -493,7 +493,7 @@ namespace HeifEncoderSample
 
                         if (booleanEncoderParameter.HasDefault)
                         {
-                            Console.Write($", default={ booleanEncoderParameter.DefaultValue }");
+                            Console.Write($", default={booleanEncoderParameter.DefaultValue}");
                         }
                         break;
                     case HeifEncoderParameterType.Integer:
@@ -501,12 +501,12 @@ namespace HeifEncoderSample
 
                         if (integerEncoderParameter.HasDefault)
                         {
-                            Console.Write($", default={ integerEncoderParameter.DefaultValue }");
+                            Console.Write($", default={integerEncoderParameter.DefaultValue}");
                         }
 
                         if (integerEncoderParameter.HasMinimumMaximum)
                         {
-                            Console.Write($", [{ integerEncoderParameter.Minimum },{ integerEncoderParameter.Maximum }]");
+                            Console.Write($", [{integerEncoderParameter.Minimum},{integerEncoderParameter.Maximum}]");
                         }
 
                         var validIntegerValues = integerEncoderParameter.ValidValues;
@@ -533,7 +533,7 @@ namespace HeifEncoderSample
 
                         if (stringEncoderParameter.HasDefault)
                         {
-                            Console.Write($", default={ stringEncoderParameter.DefaultValue }");
+                            Console.Write($", default={stringEncoderParameter.DefaultValue}");
                         }
 
                         var validStringValues = stringEncoderParameter.ValidValues;
@@ -556,7 +556,7 @@ namespace HeifEncoderSample
                         }
                         break;
                     default:
-                        throw new InvalidOperationException($"Unknown { nameof(HeifEncoderParameterType) }, { parameter.ParameterType }.");
+                        throw new InvalidOperationException($"Unknown {nameof(HeifEncoderParameterType)}, {parameter.ParameterType}.");
                 }
 
                 Console.Write(Environment.NewLine);

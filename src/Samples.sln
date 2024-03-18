@@ -15,6 +15,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "info", "info\info.csproj", "{C3FE7D96-3828-4207-8CF2-407345BF187E}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "shared", "shared\shared.shproj", "{79885E8A-B811-4B4E-BD93-D2D639E03A1C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,5 +41,11 @@ Global
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4125DE00-AA5E-4BA6-B3D6-0757E9A7F203}
+	EndGlobalSection
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		shared\shared.projitems*{4319afce-e2ba-4298-89cc-1f2671fc4afe}*SharedItemsImports = 5
+		shared\shared.projitems*{79885e8a-b811-4b4e-bd93-d2d639e03a1c}*SharedItemsImports = 13
+		shared\shared.projitems*{7cd7803c-cacb-4722-9261-07f72001cbcc}*SharedItemsImports = 5
+		shared\shared.projitems*{c3fe7d96-3828-4207-8cf2-407345bf187e}*SharedItemsImports = 5
 	EndGlobalSection
 EndGlobal
