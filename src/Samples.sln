@@ -17,6 +17,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "info", "info\info.csproj", 
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "shared", "shared\shared.shproj", "{79885E8A-B811-4B4E-BD93-D2D639E03A1C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "heifapi", "heifapi\heifapi.csproj", "{17599582-373C-476C-A274-B5C9A47421AF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,6 +37,10 @@ Global
 		{C3FE7D96-3828-4207-8CF2-407345BF187E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C3FE7D96-3828-4207-8CF2-407345BF187E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C3FE7D96-3828-4207-8CF2-407345BF187E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{17599582-373C-476C-A274-B5C9A47421AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{17599582-373C-476C-A274-B5C9A47421AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{17599582-373C-476C-A274-B5C9A47421AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{17599582-373C-476C-A274-B5C9A47421AF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
