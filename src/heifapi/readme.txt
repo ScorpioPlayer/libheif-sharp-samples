@@ -1,0 +1,1 @@
+dotnet publish -c Release -r win-x64 -o "C:\GitHub\WhisperUI\HeicStudio\HeicStudio (Package)\heifapi"

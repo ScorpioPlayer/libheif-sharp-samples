@@ -33,14 +33,33 @@ var sampleTodos = new Todo[] {
 
 
 {
-    var heifApi = app.MapGroup("/heif");
-    heifApi.MapGet("/test", () =>
+    var heifApi = app.MapGroup("/api/heif");
+
+    heifApi.MapGet("/convert", (string path) =>
     {
-        HeifInfo.Main(new string[] { @"E:\tmp\20240101_223638222_iOS.heic" });
-        HeifDec.Main(new string[] { @"E:\tmp\20240101_223638222_iOS.heic", @"E:\tmp\20240101_223638222_iOS.png" });
-        return "good";
+        var id = Guid.NewGuid().ToString();
+        var filename = $"{id}.png";
+        var dir = Path.Combine(Path.GetTempPath(), "heifapi");
+        if (!Directory.Exists(dir))
+        {
+            Directory.CreateDirectory(dir);
+        }
+        var output = Path.Combine(dir, filename);
+        HeifDec.Execute(path, output, extractPrimaryImage: true);
+
+        var imageFile = Directory.GetFiles(dir, $"*{id}*")?.FirstOrDefault();
+        if (imageFile != null)
+        {
+            var fi = new FileInfo(output);
+            if (fi.Exists && fi.Length > 0)
+            {
+                return fi.FullName;
+            }
+        }
+        return string.Empty;
     });
 }
+
 
 app.Run();
 

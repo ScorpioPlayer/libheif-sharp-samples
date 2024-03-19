@@ -26,16 +26,12 @@
  */
 
 using LibHeifSharp;
-using Mono.Options;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Metadata.Profiles.Exif;
 using SixLabors.ImageSharp.Metadata.Profiles.Icc;
 using SixLabors.ImageSharp.Metadata.Profiles.Xmp;
 using SixLabors.ImageSharp.PixelFormats;
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Reflection;
 
 namespace System
@@ -44,40 +40,19 @@ namespace System
     {
         private static readonly Lazy<char[]> InvalidFileNameChars = new(Path.GetInvalidFileNameChars);
 
-        public static void Main(string[] args)
+        public static void Execute(string inputPath, string outputPath,
+       bool extractDepthImages = false,
+       bool extractThumbnailImages = false,
+       bool extractVendorAuxiliaryImages = false,
+       bool extractPrimaryImage = false,
+       string decoderId = null,
+       string chromaUpsampling = null,
+       bool listDecoders = false,
+       bool convertHdrToEightBit = false,
+       bool strict = false,
+       bool showHelp = false,
+       bool showVersion = false)
         {
-            bool extractDepthImages = false;
-            bool extractThumbnailImages = false;
-            bool extractVendorAuxiliaryImages = false;
-            bool extractPrimaryImage = false;
-            string decoderId = null;
-            string chromaUpsampling = null;
-            bool listDecoders = false;
-            bool convertHdrToEightBit = false;
-            bool strict = false;
-            bool showHelp = false;
-            bool showVersion = false;
-
-            var options = new OptionSet
-            {
-                "Usage: heif-dec [OPTIONS] input.heif output.png",
-                "",
-                "Options:",
-                { "p|primary", "Extract the primary image (default: extract all top-level images).", (v) => extractPrimaryImage = v != null },
-                { "d|depth", "Extract the depth images (if present).", (v) => extractDepthImages = v != null },
-                { "t|thumb", "Extract the thumbnail images (if present).", (v) => extractThumbnailImages = v != null },
-                { "x|vendor-auxiliary", "Extract the vendor-specific auxiliary images (if present).", (v) => extractVendorAuxiliaryImages = v != null },
-                { "decoder=", "Use a specific decoder. See the list-decoders option.", (v) => decoderId = v },
-                { "list-decoders", "Show a list of the available decoders.", (v) => listDecoders = v != null },
-                { "C|chroma-upsampling=", "Force chroma upsampling algorithm (nearest-neighbor / bilinear).", (v) => chromaUpsampling = v },
-                { "no-hdr", "Convert HDR images to 8 bits-per-channel.", (v) => convertHdrToEightBit = v != null },
-                { "s|strict", "Return an error for invalid inputs.", (v) => strict = v != null },
-                { "h|help", "Print out this message and exit.", (v) => showHelp = v != null },
-                { "v|version", "Print out the application and library version information and exit.", (v) => showVersion = v != null }
-            };
-
-            var remaining = options.Parse(args);
-
             if (showVersion)
             {
                 PrintVersionInfo();
@@ -124,14 +99,7 @@ namespace System
                 }
             }
 
-            if (showHelp || remaining.Count != 2)
-            {
-                options.WriteOptionDescriptions(Console.Out);
-                return;
-            }
 
-            string inputPath = remaining[0];
-            string outputPath = remaining[1];
 
             try
             {
