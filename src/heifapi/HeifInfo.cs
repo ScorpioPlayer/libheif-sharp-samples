@@ -360,7 +360,7 @@ namespace System
                 {
                     using (HeifImageHandle thumbnail = handle.GetThumbnailImage(thumbnailId))
                     {
-                        Console.WriteLine("    thumbnail: {0}x{1} {2}-bit",
+                        sb.AppendFormatLine("    thumbnail: {0}x{1} {2}-bit",
                                           thumbnail.Width,
                                           thumbnail.Height,
                                           thumbnail.BitDepth);
