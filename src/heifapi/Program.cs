@@ -36,19 +36,19 @@ var sampleTodos = new Todo[] {
     var heifApi = app.MapGroup("/api/heif");
     heifApi.MapGet("/info", (string path) =>
     {
-        return HeifInfo.Execute(path);
+        return HeifInfo.Execute(path) ?? string.Empty;
     });
-    heifApi.MapGet("/convert", (string path) =>
+    heifApi.MapGet("/convert", (string path, bool convertHdrToEightBit = false, string ext = "png") =>
     {
         var id = Guid.NewGuid().ToString();
-        var filename = $"{id}.png";
+        var filename = $"{id}.{ext}";
         var dir = Path.Combine(Path.GetTempPath(), "heifapi");
         if (!Directory.Exists(dir))
         {
             Directory.CreateDirectory(dir);
         }
         var output = Path.Combine(dir, filename);
-        HeifDec.Execute(path, output, extractPrimaryImage: true);
+        HeifDec.Execute(path, output, extractPrimaryImage: true, convertHdrToEightBit: convertHdrToEightBit);
 
         var imageFile = Directory.GetFiles(dir, $"*{id}*")?.FirstOrDefault();
         if (imageFile != null)
