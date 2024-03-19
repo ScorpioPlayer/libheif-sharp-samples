@@ -29,90 +29,75 @@ using LibHeifSharp;
 using Mono.Options;
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Text;
 
 namespace System
 {
+    internal static class sbext
+    {
+        public static void AppendFormatLine(this StringBuilder sb, string format, params object[] arg0)
+        {
+            sb.AppendFormat(format, arg0);
+            sb.AppendLine();
+        }
+    }
     public class HeifInfo
     {
-        public static void Main(string[] args)
+        public static string Execute(string file)
         {
-            bool showHelp = false;
-            bool showVersion = false;
-
             try
             {
-                var options = new OptionSet
-                {
-                    "Usage: heif-info [OPTIONS] input",
-                    "",
-                    "Options:",
-                    { "h|help", "Print out this message and exit.", (v) => showHelp = v != null },
-                    { "v|version", "Print out the application and library version information and exit.", (v) => showVersion = v != null }
-                };
-
-                var remaining = options.Parse(args);
-
- 
-                if (showVersion)
-                {
-                    PrintVersionInfo();
-                    return;
-                }
-                else if (showHelp || remaining.Count != 1)
-                {
-                    options.WriteOptionDescriptions(Console.Out);
-                    return;
-                }
-
-                string file = args[0];
-
                 using (HeifContext context = new HeifContext(file))
                 {
                     var topLevelImageIds = context.GetTopLevelImageIds();
-
+                    StringBuilder sb = new StringBuilder();
                     foreach (var imageId in topLevelImageIds)
                     {
                         using (var imageHandle = context.GetImageHandle(imageId))
                         {
-                            Console.WriteLine("image: {0}x{1} {2}-bit (id={3}){4}",
+                            sb.AppendFormatLine("image: {0}x{1} {2}-bit (id={3}){4}",
                                               imageHandle.Width,
                                               imageHandle.Height,
                                               imageHandle.BitDepth,
                                               imageId,
                                               imageHandle.IsPrimaryImage ? " primary" : string.Empty);
-                            WriteThumbnailImageInfo(imageHandle);
+                            WriteThumbnailImageInfo(imageHandle, sb);
 
-                            Console.WriteLine("  color profile: {0}", GetColorProfileDescription(imageHandle));
-                            Console.WriteLine("  alpha channel: {0}", GetAlphaChannelDescription(imageHandle));
+                            sb.AppendFormatLine("  color profile: {0}", GetColorProfileDescription(imageHandle));
+                            sb.AppendFormatLine("  alpha channel: {0}", GetAlphaChannelDescription(imageHandle));
 
-                            WriteDepthImageInfo(imageHandle);
-                            WriteMetadataInfo(imageHandle);
+                            WriteDepthImageInfo(imageHandle, sb);
+                            WriteMetadataInfo(imageHandle, sb);
 
                             if (LibHeifInfo.HaveVersion(1, 16, 0))
                             {
-                                WriteTransformationInfo(context, imageHandle);
-                                WriteRegionInfo(context, imageHandle);
-                                WritePropertyInfo(context, imageHandle);
+                                WriteTransformationInfo(context, imageHandle, sb);
+                                WriteRegionInfo(context, imageHandle, sb);
+                                WritePropertyInfo(context, imageHandle, sb);
                             }
 
                             if (LibHeifInfo.HaveVersion(1, 15, 0))
                             {
                                 using (var image = imageHandle.Decode(HeifColorspace.Undefined, HeifChroma.Undefined))
                                 {
-                                    WritePixelAspectRatio(image.PixelAspectRatio);
-                                    WriteContentLightLevelInfo(image.ContentLightLevel);
-                                    WriteMasteringDisplayColorVolumeInfo(image.MasteringDisplayColourVolume);
+                                    WritePixelAspectRatio(image.PixelAspectRatio, sb);
+                                    WriteContentLightLevelInfo(image.ContentLightLevel, sb);
+                                    WriteMasteringDisplayColorVolumeInfo(image.MasteringDisplayColourVolume, sb);
                                 }
                             }
                         }
                     }
+                    return sb.ToString();
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
             }
+
+            return null;
         }
 
         static void PrintVersionInfo()
@@ -170,21 +155,21 @@ namespace System
             return description;
         }
 
-        static void WriteContentLightLevelInfo(HeifContentLightLevel contentLightLevel)
+        static void WriteContentLightLevelInfo(HeifContentLightLevel contentLightLevel, StringBuilder sb)
         {
             if (contentLightLevel != null)
             {
-                Console.WriteLine("  content light level (clli):");
-                Console.WriteLine("    max content light level: {0}", contentLightLevel.MaxContentLightLevel);
-                Console.WriteLine("    max picture average light level: {0}", contentLightLevel.MaxPictureAverageLightLevel);
+                sb.AppendFormatLine("  content light level (clli):");
+                sb.AppendFormatLine("    max content light level: {0}", contentLightLevel.MaxContentLightLevel);
+                sb.AppendFormatLine("    max picture average light level: {0}", contentLightLevel.MaxPictureAverageLightLevel);
             }
         }
 
-        static void WriteDepthImageInfo(HeifImageHandle handle)
+        static void WriteDepthImageInfo(HeifImageHandle handle, StringBuilder sb)
         {
             if (handle.HasDepthImage)
             {
-                Console.WriteLine("  depth image: yes");
+                sb.AppendFormatLine("  depth image: yes");
 
                 var depthIds = handle.GetDepthImageIds();
 
@@ -192,22 +177,22 @@ namespace System
                 {
                     using (HeifImageHandle depthHandle = handle.GetDepthImage(depthId))
                     {
-                        Console.WriteLine("    depth: {0}x{1}", handle.Width, handle.Height);
+                        sb.AppendFormatLine("    depth: {0}x{1}", handle.Width, handle.Height);
                     }
 
                     var depthRepresentationInfo = handle.GetDepthRepresentationInfo(depthId);
 
                     if (depthRepresentationInfo != null)
                     {
-                        Console.WriteLine("    z-near: {0}", GetNullableValue(depthRepresentationInfo.ZNear));
-                        Console.WriteLine("    z-far: {0}", GetNullableValue(depthRepresentationInfo.ZFar));
-                        Console.WriteLine("    d-min: {0}", GetNullableValue(depthRepresentationInfo.DMin));
-                        Console.WriteLine("    d-max: {0}", GetNullableValue(depthRepresentationInfo.DMax));
-                        Console.WriteLine("    representation: {0}", GetRepresentationString(depthRepresentationInfo.DepthRepresentationType));
+                        sb.AppendFormatLine("    z-near: {0}", GetNullableValue(depthRepresentationInfo.ZNear));
+                        sb.AppendFormatLine("    z-far: {0}", GetNullableValue(depthRepresentationInfo.ZFar));
+                        sb.AppendFormatLine("    d-min: {0}", GetNullableValue(depthRepresentationInfo.DMin));
+                        sb.AppendFormatLine("    d-max: {0}", GetNullableValue(depthRepresentationInfo.DMax));
+                        sb.AppendFormatLine("    representation: {0}", GetRepresentationString(depthRepresentationInfo.DepthRepresentationType));
 
                         if (depthRepresentationInfo.DMin.HasValue || depthRepresentationInfo.DMax.HasValue)
                         {
-                            Console.WriteLine("    disparity reference view: {0}", depthRepresentationInfo.DisparityReferenceView);
+                            sb.AppendFormatLine("    disparity reference view: {0}", depthRepresentationInfo.DisparityReferenceView);
                         }
 
                         static string GetRepresentationString(HeifDepthRepresentationType type)
@@ -236,37 +221,37 @@ namespace System
             }
             else
             {
-                Console.WriteLine("  depth image: no");
+                sb.AppendFormatLine("  depth image: no");
             }
         }
 
-        static void WriteMasteringDisplayColorVolumeInfo(HeifMasteringDisplayColourVolume data)
+        static void WriteMasteringDisplayColorVolumeInfo(HeifMasteringDisplayColourVolume data, StringBuilder sb)
         {
             if (data != null)
             {
                 var decoded = data.Decode();
 
-                Console.WriteLine("  mastering display color volume:");
-                Console.WriteLine("    display primaries (x,y): ({0};{1}), ({2};{3}), ({4};{5})",
+                sb.AppendFormatLine("  mastering display color volume:");
+                sb.AppendFormatLine("    display primaries (x,y): ({0};{1}), ({2};{3}), ({4};{5})",
                                   decoded.DisplayPrimariesX[0],
                                   decoded.DisplayPrimariesY[0],
                                   decoded.DisplayPrimariesX[1],
                                   decoded.DisplayPrimariesY[1],
                                   decoded.DisplayPrimariesX[2],
                                   decoded.DisplayPrimariesY[2]);
-                Console.WriteLine("    white point (x,y): ({0};{1})", decoded.WhitePointX, decoded.WhitePointY);
-                Console.WriteLine("    max display mastering luminance: {0}", decoded.MaxDisplayMasteringLuminance);
-                Console.WriteLine("    min display mastering luminance: {0}", decoded.MinDisplayMasteringLuminance);
+                sb.AppendFormatLine("    white point (x,y): ({0};{1})", decoded.WhitePointX, decoded.WhitePointY);
+                sb.AppendFormatLine("    max display mastering luminance: {0}", decoded.MaxDisplayMasteringLuminance);
+                sb.AppendFormatLine("    min display mastering luminance: {0}", decoded.MinDisplayMasteringLuminance);
             }
         }
 
-        static void WriteMetadataInfo(HeifImageHandle handle)
+        static void WriteMetadataInfo(HeifImageHandle handle, StringBuilder sb)
         {
             var metadataBlockIds = handle.GetMetadataBlockIds();
 
             if (metadataBlockIds.Count > 0)
             {
-                Console.WriteLine("  metadata:");
+                sb.AppendFormatLine("  metadata:");
 
                 foreach (var metadataBlockId in metadataBlockIds)
                 {
@@ -274,12 +259,12 @@ namespace System
 
                     string id = GetMetadataTypeString(metadataInfo);
 
-                    Console.WriteLine("    {0}: {1} bytes", id, metadataInfo.Size);
+                    sb.AppendFormatLine("    {0}: {1} bytes", id, metadataInfo.Size);
                 }
             }
             else
             {
-                Console.WriteLine("  metadata: none");
+                sb.AppendFormatLine("  metadata: none");
             }
 
             static string GetMetadataTypeString(HeifMetadataBlockInfo metadataInfo)
@@ -302,33 +287,33 @@ namespace System
             }
         }
 
-        static void WritePixelAspectRatio(in HeifPixelAspectRatio pixelAspectRatio)
+        static void WritePixelAspectRatio(in HeifPixelAspectRatio pixelAspectRatio, StringBuilder sb)
         {
             if (!pixelAspectRatio.HasSquareAspectRatio)
             {
-                Console.WriteLine("  pixel aspect ratio: {0}", pixelAspectRatio.ToString());
+                sb.AppendFormatLine("  pixel aspect ratio: {0}", pixelAspectRatio.ToString());
             }
         }
 
-        static void WritePropertyInfo(HeifContext context, HeifImageHandle imageHandle)
+        static void WritePropertyInfo(HeifContext context, HeifImageHandle imageHandle, StringBuilder sb)
         {
             var userDescriptions = context.GetUserDescriptionProperties(imageHandle);
 
-            Console.WriteLine("  properties:");
+            sb.AppendFormatLine("  properties:");
 
             foreach (var item in userDescriptions)
             {
-                Console.WriteLine("    user description:");
-                Console.WriteLine("      language: {0}", item.Language);
-                Console.WriteLine("      name: {0}", item.Name);
-                Console.WriteLine("      description: {0}", item.Description);
-                Console.WriteLine("      tags: {0}", item.Tags);
+                sb.AppendFormatLine("    user description:");
+                sb.AppendFormatLine("      language: {0}", item.Language);
+                sb.AppendFormatLine("      name: {0}", item.Name);
+                sb.AppendFormatLine("      description: {0}", item.Description);
+                sb.AppendFormatLine("      tags: {0}", item.Tags);
             }
         }
 
-        static void WriteRegionInfo(HeifContext context, HeifImageHandle imageHandle)
+        static void WriteRegionInfo(HeifContext context, HeifImageHandle imageHandle, StringBuilder sb)
         {
-            Console.WriteLine("  region annotations:");
+            sb.AppendFormatLine("  region annotations:");
 
             var ids = imageHandle.GetRegionItemIds();
 
@@ -338,7 +323,7 @@ namespace System
                 {
                     var regions = regionItem.GetRegionGeometries();
 
-                    Console.WriteLine("    id={0} reference_width={1} reference_height={2} {3} regions",
+                    sb.AppendFormatLine("    id={0} reference_width={1} reference_height={2} {3} regions",
                                       regionItem.Id,
                                       regionItem.ReferenceWidth,
                                       regionItem.ReferenceHeight,
@@ -346,30 +331,30 @@ namespace System
 
                     foreach (var region in regions)
                     {
-                        Console.WriteLine("      {0}", region.ToString());
+                        sb.AppendFormatLine("      {0}", region.ToString());
                     }
 
                     var userDescriptions = context.GetUserDescriptionProperties(regionItem.Id);
 
                     foreach (var item in userDescriptions)
                     {
-                        Console.WriteLine("    user description:");
-                        Console.WriteLine("      language: {0}", item.Language);
-                        Console.WriteLine("      name: {0}", item.Name);
-                        Console.WriteLine("      description: {0}", item.Description);
-                        Console.WriteLine("      tags: {0}", item.Tags);
+                        sb.AppendFormatLine("    user description:");
+                        sb.AppendFormatLine("      language: {0}", item.Language);
+                        sb.AppendFormatLine("      name: {0}", item.Name);
+                        sb.AppendFormatLine("      description: {0}", item.Description);
+                        sb.AppendFormatLine("      tags: {0}", item.Tags);
                     }
                 }
             }
         }
 
-        static void WriteThumbnailImageInfo(HeifImageHandle handle)
+        static void WriteThumbnailImageInfo(HeifImageHandle handle, StringBuilder sb)
         {
             var thumbnailIds = handle.GetThumbnailImageIds();
 
             if (thumbnailIds.Count > 0)
             {
-                Console.WriteLine("  thumbnails:");
+                sb.AppendFormatLine("  thumbnails:");
 
                 foreach (var thumbnailId in thumbnailIds)
                 {
@@ -384,26 +369,26 @@ namespace System
             }
             else
             {
-                Console.WriteLine("  thumbnails: none");
+                sb.AppendFormatLine("  thumbnails: none");
             }
         }
 
-        static void WriteTransformationInfo(HeifContext context, HeifImageHandle imageHandle)
+        static void WriteTransformationInfo(HeifContext context, HeifImageHandle imageHandle, StringBuilder sb)
         {
             var transformations = context.GetTransformationProperties(imageHandle);
 
             if (transformations.Count > 0)
             {
-                Console.WriteLine("  transformations:");
+                sb.AppendFormatLine("  transformations:");
 
                 foreach (var item in transformations)
                 {
-                    Console.WriteLine("    {0}", item.ToString());
+                    sb.AppendFormatLine("    {0}", item.ToString());
                 }
             }
             else
             {
-                Console.WriteLine("  transformations: none");
+                sb.AppendFormatLine("  transformations: none");
             }
         }
     }

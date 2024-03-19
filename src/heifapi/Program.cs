@@ -34,7 +34,10 @@ var sampleTodos = new Todo[] {
 
 {
     var heifApi = app.MapGroup("/api/heif");
-
+    heifApi.MapGet("/info", (string path) =>
+    {
+        return HeifInfo.Execute(path);
+    });
     heifApi.MapGet("/convert", (string path) =>
     {
         var id = Guid.NewGuid().ToString();
