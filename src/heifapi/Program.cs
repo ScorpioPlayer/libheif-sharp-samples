@@ -36,7 +36,8 @@ var sampleTodos = new Todo[] {
     var heifApi = app.MapGroup("/heif");
     heifApi.MapGet("/test", () =>
     {
-        HeifInfoSample.HeifInfo.Main(new string[] { @"E:\tmp\20240101_223638222_iOS.heic" });
+        HeifInfo.Main(new string[] { @"E:\tmp\20240101_223638222_iOS.heic" });
+        HeifDec.Main(new string[] { @"E:\tmp\20240101_223638222_iOS.heic", @"E:\tmp\20240101_223638222_iOS.png" });
         return "good";
     });
 }

@@ -31,7 +31,7 @@ using System;
 using System.Diagnostics;
 using System.Reflection;
 
-namespace HeifInfoSample
+namespace System
 {
     public class HeifInfo
     {
